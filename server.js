@@ -29,6 +29,8 @@ class Server {
 
     cargarRutas() {
         this.app.use("/api/ropa", ropaRoutes); //Rutas de la API de ropa
+        this.app.use("/api/usuarios", usuarioRoutes); // Rutas de usuarios
+        this.app.use("/api/pedidos", pedidoRoutes); // Rutas de pedidos
     }
 
     listen() {
