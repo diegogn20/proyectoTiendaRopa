@@ -38,7 +38,7 @@ const crearPedido = async (req, res) => {
 // Obtener todos los pedidos (solo para administradores)
 const obtenerPedidos = async (req, res) => {
     try {
-        if (req.usuario.clasificacion !== 'administrador') {
+        if (req.usuario.rol !== 'administrador') {
             return res.status(403).json({ mensaje: 'Acceso denegado' });
         }
 
@@ -65,14 +65,14 @@ const obtenerPedidosCliente = async (req, res) => {
 // Asignar un repartidor a un pedido (solo para administradores)
 const asignarRepartidor = async (req, res) => {
     try {
-        if (req.usuario.clasificacion !== 'administrador') {
+        if (req.usuario.rol !== 'administrador') {
             return res.status(403).json({ mensaje: 'Acceso denegado' });
         }
 
         const { pedidoId, repartidorId } = req.body;
 
         const repartidor = await Usuario.findById(repartidorId);
-        if (!repartidor || repartidor.clasificacion !== 'repartidor') {
+        if (!repartidor || repartidor.rol !== 'repartidor') {
             return res.status(404).json({ mensaje: 'Repartidor no encontrado' });
         }
 

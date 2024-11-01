@@ -1,5 +1,7 @@
 const express = require("express"); 
 const ropaRoutes = require('./routes/ropa');
+const usuarioRoutes = require('./routes/usuario');
+const pedidoRoutes = require('./routes/pedido');
 const mongoose = require("mongoose");
 const path = require("path"); 
 
@@ -29,8 +31,8 @@ class Server {
 
     cargarRutas() {
         this.app.use("/api/ropa", ropaRoutes); //Rutas de la API de ropa
-        this.app.use("/api/usuarios", usuarioRoutes); // Rutas de usuarios
-        this.app.use("/api/pedidos", pedidoRoutes); // Rutas de pedidos
+        this.app.use("/api/usuario", usuarioRoutes); // Rutas de usuarios
+        this.app.use("/api/pedido", pedidoRoutes); // Rutas de pedidos
     }
 
     listen() {

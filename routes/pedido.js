@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { verificarToken } = require('../middleware/auth');
+const { verificarToken, autorizarRol } = require('../middleware/auth');
 const {
     crearPedido,
     obtenerPedidos,
@@ -9,11 +9,13 @@ const {
     cambiarEstadoPedido
 } = require('../controllers/pedido');
 
-router.post('/', verificarToken, crearPedido);
+// Solo los clientes pueden crear pedidos
+router.post('/', verificarToken, autorizarRol('cliente'), crearPedido);
 router.get('/', verificarToken, obtenerPedidos);
 router.get('/cliente', verificarToken, obtenerPedidosCliente);
 router.put('/asignar-repartidor', verificarToken, asignarRepartidor);
-router.put('/cambiar-estado', verificarToken, cambiarEstadoPedido);
+// Solo el administrador y repartidor pueden actualizar el estado de los pedidos
+router.put('/:id-pedido', verificarToken, autorizarRol('administrador', 'repartidor'), cambiarEstadoPedido);
 
 module.exports = router;
 
