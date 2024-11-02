@@ -7,17 +7,16 @@ router.post('/login', loginUsuario);//http://localhost:3000/api/usuario/login  -
 
 module.exports = router;
 
-/*
-{
-    "nombre": "ton",
-    "password": "ton"
-}
-*/
-
-/*
+/*registrar usr
 {
     "nombre": "ton",
     "password": "ton",
     "rol": "cliente"
-}
-*/
+}*/
+
+/*login 
+{
+    "nombre": "ton",
+    "password": "ton"
+}*/
+
