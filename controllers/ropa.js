@@ -1,99 +1,70 @@
 const Ropa = require('../models/ropa');
 
-const getTodos = async (req, res) => {
-  try {
-      const prendas = await Ropa.find(); 
-      res.json(prendas);
-  } catch (error) {
-      console.error("Error al obtener las prendas:", error); 
-      res.status(500).json({ mensaje: 'Error al obtener las prendas', error: error.message });
-  }
-}; 
+exports.crearRopa = async (req, res) => {
+    const { nombre, categoria, marca, precio, talle, stock } = req.body;
+    const imagenURL = req.files.map(file => `/uploads/${file.filename}`);//imagenes
 
-const getById = async (req, res) => {
-    const {id} = req.params;
-    const prenda = await Ropa.findById(id);
+    const nuevaRopa = new Ropa({
+        nombre,
+        categoria,
+        marca,
+        precio,
+        talle,
+        stock,
+        imagenURL //que coincida con el esquema
+    });
 
-    if(prenda){
-        res.json(prenda);
-    }else{
-        res.status(404).json({mensaje:'Prenda no encontrada'});
+    try {
+        await nuevaRopa.save();
+        res.status(201).json(nuevaRopa);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al crear ropa', error });
     }
 };
 
-const getByNombre = async (req, res) => {
-    const { nombre } = req.params;
-    const prenda = await Ropa.findOne({ nombre: new RegExp(nombre, 'i') }); //búsqueda insensible a mayúsculas
-
-    if (prenda) {
-        res.json(prenda);
-    } else {
-        res.status(404).json({ mensaje: 'Prenda no encontrada' });
+exports.obtenerRopa = async (req, res) => {
+    try {
+        const ropa = await Ropa.find({});
+        res.status(200).json(ropa);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener ropa', error });
     }
 };
 
-const getByNombreYTalle = async (req, res) => {
-  const { nombre, talle } = req.params;
-  try {
-      const prenda = await Ropa.findOne({ nombre: new RegExp(nombre, 'i'), talle: talle });
-      if (prenda) {
-          res.json(prenda);
-      } else {
-          res.status(404).json({ mensaje: 'Prenda no encontrada' });
-      }
-  } catch (error) {
-      console.error("Error al obtener la prenda:", error);
-      res.status(500).json({ mensaje: 'Error al obtener la prenda', error: error.message });
-  }
-};
+exports.obtenerRopaPorId = async (req, res) => {
+    const { ropaId } = req.body;
 
-const getImagenByNombre = async (req, res) => {
-    const { nombre } = req.params;
-    const prenda = await Ropa.findOne({ nombre: new RegExp(nombre, 'i') });
+    try {
+        const ropa = await Ropa.findById(ropaId);
 
-    if (prenda && prenda.imagenURL) {
-        const rutaImagen = path.join(__dirname, '..', 'uploads', prenda.imagenURL);
-        res.sendFile(rutaImagen);
-    } else {
-        res.status(404).json({ mensaje: 'Imagen no encontrada' });
+        if (!ropa) {
+            return res.status(404).json({ message: 'Ropa no encontrada' });
+        }
+
+        res.status(200).json(ropa);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener ropa', error });
     }
 };
 
-const add = async (req, res) => {
-    const nuevaPrenda = new Ropa(req.body);
-    await nuevaPrenda.save(); 
-    res.status(201).json(nuevaPrenda);
+exports.buscarRopaAproximada = async (req, res) => {
+    try {
+        const { nombre } = req.query; //query se obtiene de los parámetros
+
+        if (!nombre) {
+            return res.status(400).json({ error: 'Debe proporcionar un nombre para la búsqueda' });
+        }
+
+        //regex busqueda aprox
+        const ropaEncontrada = await Ropa.find({
+            nombre: { $regex: nombre, $options: 'i' } // 'i' insensible a mayus
+        });
+
+        res.json(ropaEncontrada);
+    } catch (error) {
+        console.error('Error al buscar ropa:', error);
+        res.status(500).json({ error: 'Error al buscar ropa' });
+    }
 };
 
-const updateById = async (req, res) => {
-    const { id } = req.params;
-    const prendaActualizada = await Ropa.findByIdAndUpdate(id, req.body, { new: true });
-  
-    if (prendaActualizada) {
-      res.json(prendaActualizada);
-    } else {
-      res.status(404).json({ mensaje: 'Prenda no encontrada' });
-    }
-  };
 
-  const deleteById = async (req, res) => {
-    const { id } = req.params;
-    const prendaEliminada = await Ropa.findByIdAndDelete(id);
-  
-    if (prendaEliminada) {
-      res.json({ mensaje: 'Prenda eliminada correctamente' });
-    } else {
-      res.status(404).json({ mensaje: 'Prenda no encontrada' });
-    }
-  };
-
-  module.exports = {
-    getTodos,
-    getById,
-    getByNombre,
-    getByNombreYTalle,
-    add,
-    updateById,
-    deleteById,
-    getImagenByNombre,
-}; 

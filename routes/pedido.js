@@ -1,46 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const { verificarToken, autorizarRol } = require('../middleware/auth');
-const {
-    crearPedido,
-    obtenerPedidos,
-    obtenerPedidosCliente,
-    asignarRepartidor,
-    cambiarEstadoPedido
-} = require('../controllers/pedido');
+const {crearPedido,obtenerPedidos,obtenerPedidosCliente,asignarRepartidor,cambiarEstadoPedido} = require('../controllers/pedido');
 
-// Solo los clientes pueden crear pedidos
-router.post('/', verificarToken, autorizarRol('cliente'), crearPedido);//http://localhost:3000/api/pedido/
-
-// Obtener todos los pedidos (administrador y repartidor)
-router.get('/', verificarToken, autorizarRol('administrador', 'repartidor'), obtenerPedidos);//http://localhost:3000/api/pedido/
-
-// Obtener pedidos específicos del cliente autenticado
-router.get('/cliente', verificarToken, autorizarRol('cliente'), obtenerPedidosCliente);//http://localhost:3000/api/pedido/cliente
-
-// Asignar repartidor a un pedido (administrador)
-router.put('/asignar-repartidor', verificarToken, autorizarRol('administrador'), asignarRepartidor);//http://localhost:3000/api/pedido/asignar-repartidor
-
-// Cambiar el estado de un pedido específico (administrador y repartidor)
-router.put('/:id-pedido', verificarToken, autorizarRol('administrador', 'repartidor'), cambiarEstadoPedido);//http://localhost:3000/api/pedido/:id-pedido
+//solo (cliente) puede crear pedido
+router.post('/crear', verificarToken, autorizarRol('cliente'), crearPedido);
+//(administrador)
+router.put('/asignarRepartidor', verificarToken, autorizarRol('administrador'), asignarRepartidor);
+//(administrador y repartidor)
+router.put('/CambiarEstado', verificarToken, autorizarRol('administrador', 'repartidor'), cambiarEstadoPedido);
+//get all pedidos (administrador y repartidor): //http://localhost:3000/api/pedido/
+router.get('/', verificarToken, autorizarRol('administrador', 'repartidor'), obtenerPedidos);
+//get cliente autenticado: http://localhost:3000/api/pedido/cliente
+router.get('/cliente', verificarToken, autorizarRol('cliente'), obtenerPedidosCliente);
 
 module.exports = router;
 
-/*crear pedido
+/*crearPedido: http://localhost:3000/api/pedido/crear
 {
-    "productoId": "ID_DEL_PRODUCTO",
-    "direccion": "Dirección de entrega"
+	"productoId": "6724d6740cc1ec3d72b62e01",
+    "direccion": "calle falsa 1400"
 }*/
 
-/*asignar repartidor
+/*asignarRepartidor: http://localhost:3000/api/pedido/asignarRepartidor
 {
-    "pedidoId": "ID_DEL_PEDIDO",
-    "repartidorId": "ID_DEL_REPARTIDOR"
+    "pedidoId": "6726ea3526b85818dbe0450f",
+    "repartidorId": "672688649e1f81e30f18f116"
 }*/
 
-/*cambiar estado pedido
- {
-    "estado": "enviado" // o "en proceso"
+/*cambiarEstado: http://localhost:3000/api/pedido/CambiarEstado
+{
+    "pedidoId": "6726ea3526b85818dbe0450f",
+	"estado": "enviado"
 }*/
+
 
 

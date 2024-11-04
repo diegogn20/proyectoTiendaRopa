@@ -6,10 +6,9 @@ const ropaSchema = new mongoose.Schema({
     marca: {type: String, required: true},
     precio: {type: Number, required: true},
     talle: {type: String, required: true},
-    stock: {type: Number, default: 0},
-    imagenURL: {type: String} 
+    stock: {type: Number, default: 10},
+    imagenURL: [{ type: String }] // Array de URLs de imágenes 
 },{collection: 'ropa'}); 
 
 module.exports = mongoose.model('Ropa',ropaSchema); 
 
- 

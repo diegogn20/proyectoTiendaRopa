@@ -11,10 +11,10 @@ const verificarToken = (req, res, next) => {
         req.usuario = decoded;
         next();
     } catch (error) {
-        res.status(400).json({ mensaje: 'Token inválido' });
+        const errorMsg = error.name === 'TokenExpiredError' ? 'Token expirado' : 'Token inválido';
+        res.status(401).json({ mensaje: errorMsg });
     }
 };
-
 
 // Middleware de autorización para verificar roles específicos
 const autorizarRol = (...rolesPermitidos) => {

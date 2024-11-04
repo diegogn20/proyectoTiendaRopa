@@ -1,8 +1,8 @@
 const Pedido = require('../models/pedido');
 const Usuario = require('../models/usuario');
 const Ropa = require('../models/ropa');
+const mongoose = require('mongoose');
 
-// Crear un nuevo pedido
 const crearPedido = async (req, res) => {
     try {
         const { productoId, direccion } = req.body;
@@ -14,7 +14,6 @@ const crearPedido = async (req, res) => {
             return res.status(404).json({ mensaje: 'Producto no disponible o fuera de stock' });
         }
 
-        // Crear un nuevo pedido
         const nuevoPedido = new Pedido({
             producto: productoId,
             cliente: clienteId,
@@ -23,8 +22,6 @@ const crearPedido = async (req, res) => {
         });
 
         await nuevoPedido.save();
-
-        // Reducir el stock del producto
         producto.stock -= 1;
         await producto.save();
 
@@ -35,13 +32,8 @@ const crearPedido = async (req, res) => {
     }
 };
 
-// Obtener todos los pedidos (solo para administradores)
 const obtenerPedidos = async (req, res) => {
     try {
-        if (req.usuario.rol !== 'administrador') {
-            return res.status(403).json({ mensaje: 'Acceso denegado' });
-        }
-
         const pedidos = await Pedido.find().populate('producto cliente repartidor');
         res.json(pedidos);
     } catch (error) {
@@ -50,7 +42,6 @@ const obtenerPedidos = async (req, res) => {
     }
 };
 
-// Obtener los pedidos de un cliente autenticado
 const obtenerPedidosCliente = async (req, res) => {
     try {
         const clienteId = req.usuario.id;
@@ -62,13 +53,8 @@ const obtenerPedidosCliente = async (req, res) => {
     }
 };
 
-// Asignar un repartidor a un pedido (solo para administradores)
 const asignarRepartidor = async (req, res) => {
     try {
-        if (req.usuario.rol !== 'administrador') {
-            return res.status(403).json({ mensaje: 'Acceso denegado' });
-        }
-
         const { pedidoId, repartidorId } = req.body;
 
         const repartidor = await Usuario.findById(repartidorId);
@@ -88,7 +74,6 @@ const asignarRepartidor = async (req, res) => {
     }
 };
 
-// Cambiar el estado de un pedido
 const cambiarEstadoPedido = async (req, res) => {
     try {
         const { pedidoId, estado } = req.body;
@@ -115,7 +100,7 @@ module.exports = {
 
 /*
 crearPedido: Crea un nuevo pedido para un cliente autenticado y reduce el stock del producto.
-obtenerPedidos: Obtiene todos los pedidos de la base de datos (solo accesible para administradores).
+obtenerPedidos: Obtiene todos los pedidos de la base de datos.
 obtenerPedidosCliente: Obtiene todos los pedidos asociados a un cliente autenticado.
 asignarRepartidor: Permite a un administrador asignar un repartidor a un pedido específico.
 cambiarEstadoPedido: Permite actualizar el estado de un pedido, y registra la fecha de envío si se establece como 'enviado'.

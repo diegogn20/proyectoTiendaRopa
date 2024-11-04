@@ -10,7 +10,7 @@ module.exports = mongoose.model('Usuario', usuarioSchema);
 
 
 /*
-Ajustar el Diagrama de Entidades
+Diagrama de Entidades
 Usuarios -> Pedidos: Los usuarios tendrán pedidos, y cada pedido tendrá referencias a cliente y repartidor.
 Pedidos -> Ropa: Cada pedido está asociado a un tipo de ropa.
 */

@@ -8,7 +8,7 @@ const path = require("path");
 class Server {
     constructor() {
         this.port = process.env.PORT || 3000;
-        this.app = express(); 
+        this.app = express();
         this.conectarBD();
         this.cargarMiddleWares();
         this.cargarRutas();
@@ -22,11 +22,13 @@ class Server {
             console.error('Error al conectar BD en la nube:', e);
         }
     } 
+    
 
     cargarMiddleWares() {
         this.app.use(express.json()); // Habilitar parsing de JSON
         // Servir la carpeta de imágenes 'uploads' de forma estática
-        this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+        //this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+        this.app.use('/uploads', express.static('uploads'));
     }
 
     cargarRutas() {

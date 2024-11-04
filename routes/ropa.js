@@ -1,14 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const {getTodos, getById, add, getByNombre, getByNombreYTalle, getImagenByNombre, updateById, deleteById} = require('../controllers/ropa');
+const { buscarRopaAproximada,obtenerRopa,obtenerRopaPorId,crearRopa } = require('../controllers/ropa');
+const upload = require('../middleware/upload');
+const { verificarToken, autorizarRol } = require('../middleware/auth');
 
-router.get('/', getTodos); 
-router.post('/', add);
-router.put('/:id', updateById);
-router.delete('/:id', deleteById);
-router.get('/:id', getById);
-router.get('/nombre/:nombre',getByNombre);//http://localhost:3000/api/ropa/nombre/Remera%20River
-router.get('/nombre/:nombre/talle/:talle',getByNombreYTalle);//http://localhost:3000/api/ropa/nombre/Remera%20River/talle/M
-router.get('/nombre/:nombre/imagen',getImagenByNombre); //http://localhost:3000/uploads/remeraRiver.jpg
+router.post('/crear',verificarToken,autorizarRol('administrador'), upload.array('imagenURL'), crearRopa);
+router.get('/', obtenerRopa);//get all http://localhost:3000/api/ropa/
+router.get('/porId', obtenerRopaPorId);//http://localhost:3000/api/ropa/porId
+router.get('/buscar', buscarRopaAproximada);//http://localhost:3000/api/ropa/buscar?nombre=camiseta
 
 module.exports = router; 
+
+/*
+{/crear body form-data: //http://localhost:3000/api/ropa/
+    "nombre": "Camisa Casual",
+    "categoria": "caballero",
+    "marca": "MarcaEjemplo",
+    "precio": 29.99,
+    "talle": "L",
+    "stock": 15,
+    "imagenURL": [
+        "camisa_casual_1.jpg",
+        "camisa_casual_2.jpg"
+    ]
+}*/ 
