@@ -11,3 +11,4 @@ const pedidoSchema = new mongoose.Schema({
 }, { collection: 'pedido' });
 
 module.exports = mongoose.model('Pedido', pedidoSchema);
+  

@@ -2,6 +2,7 @@ const express = require("express");
 const ropaRoutes = require('./routes/ropa');
 const usuarioRoutes = require('./routes/usuario');
 const pedidoRoutes = require('./routes/pedido');
+const pagoRoutes = require('./routes/pago');
 const mongoose = require("mongoose");
 const path = require("path"); 
 
@@ -27,14 +28,14 @@ class Server {
     cargarMiddleWares() {
         this.app.use(express.json()); // Habilitar parsing de JSON
         // Servir la carpeta de imágenes 'uploads' de forma estática
-        //this.app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
         this.app.use('/uploads', express.static('uploads'));
     }
 
     cargarRutas() {
         this.app.use("/api/ropa", ropaRoutes); //Rutas de la API de ropa
-        this.app.use("/api/usuario", usuarioRoutes); // Rutas de usuarios
-        this.app.use("/api/pedido", pedidoRoutes); // Rutas de pedidos
+        this.app.use("/api/usuario", usuarioRoutes);
+        this.app.use("/api/pedido", pedidoRoutes); 
+        this.app.use("/api/pago", pagoRoutes);
     }
 
     listen() {

@@ -23,6 +23,56 @@ const registrarUsuario = async (req, res) => {
     }
 };
 
+const eliminarUsuario = async (req, res) => {
+    const { id } = req.params; 
+
+    try {
+        const usuarioEliminado = await Usuario.findByIdAndDelete(id);
+
+        if (!usuarioEliminado) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        res.status(200).json({ mensaje: 'Usuario eliminado con éxito', usuarioEliminado });
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        res.status(500).json({ mensaje: 'Error al eliminar el usuario', error: error.message });
+    }
+};
+
+const modificarUsuario = async (req, res) => {
+    const { id } = req.params; 
+    const { nombre, password, rol } = req.body;
+
+    try {
+        const usuario = await Usuario.findById(id);
+        if (!usuario) {
+            return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+        }
+
+        // Actualizar el nombre si se proporciona
+        if (nombre) {
+            usuario.nombre = nombre;
+        }
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            usuario.password = await bcrypt.hash(password, salt);
+        }
+
+        if (rol) {
+            usuario.rol = rol;
+        }
+
+        //guardar cambios 
+        const usuarioActualizado = await usuario.save();
+        res.status(200).json({ mensaje: 'Usuario actualizado con éxito', usuarioActualizado });
+    } catch (error) {
+        console.error('Error al modificar usuario:', error);
+        res.status(500).json({ mensaje: 'Error al modificar el usuario', error: error.message });
+    }
+};
+
 const loginUsuario = async (req, res) => {
     const { nombre, password } = req.body;//body obtiene del json
     try {
@@ -49,5 +99,5 @@ const loginUsuario = async (req, res) => {
     }
 };
 
-module.exports = { registrarUsuario, loginUsuario };
+module.exports = { registrarUsuario,eliminarUsuario, modificarUsuario, loginUsuario };
 

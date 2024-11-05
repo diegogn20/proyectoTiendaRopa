@@ -2,7 +2,7 @@ const Pedido = require('../models/pedido');
 const Usuario = require('../models/usuario');
 const Ropa = require('../models/ropa');
 const mongoose = require('mongoose');
-
+ 
 const crearPedido = async (req, res) => {
     try {
         const { productoId, direccion } = req.body;
@@ -29,6 +29,76 @@ const crearPedido = async (req, res) => {
     } catch (error) {
         console.error('Error al crear el pedido:', error);
         res.status(500).json({ mensaje: 'Error al crear el pedido', error: error.message });
+    }
+};
+
+const eliminarPedido = async (req, res) => {
+    try {
+        const { id } = req.params; 
+
+        const pedidoEliminado = await Pedido.findById(id);
+
+        if (!pedidoEliminado) {
+            return res.status(404).json({ mensaje: 'Pedido no encontrado' });
+        }
+
+        const producto = await Ropa.findById(pedidoEliminado.producto);
+
+        if (producto) {
+            producto.stock += 1; 
+            await producto.save(); 
+        }
+
+        await Pedido.findByIdAndDelete(id);
+
+        res.status(200).json({ mensaje: 'Pedido eliminado con éxito', pedidoEliminado });
+    } catch (error) {
+        console.error('Error al eliminar el pedido:', error);
+        res.status(500).json({ mensaje: 'Error al eliminar el pedido', error: error.message });
+    }
+};
+
+const modificarPedido = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const { productoId, direccion, estado } = req.body;
+
+        const pedido = await Pedido.findById(id);
+        if (!pedido) {
+            return res.status(404).json({ mensaje: 'Pedido no encontrado' });
+        }
+
+        // Si se proporciona un nuevo producto, actualizar el stock
+        if (productoId && productoId !== pedido.producto.toString()) {
+            const productoAntiguo = await Ropa.findById(pedido.producto);
+            if (productoAntiguo) {
+                productoAntiguo.stock += 1; 
+                await productoAntiguo.save();
+            }
+
+            const nuevoProducto = await Ropa.findById(productoId);
+            if (!nuevoProducto || nuevoProducto.stock <= 0) {
+                return res.status(404).json({ mensaje: 'Nuevo producto no disponible o fuera de stock' });
+            }
+            nuevoProducto.stock -= 1;
+            await nuevoProducto.save();
+            pedido.producto = productoId;
+        }
+
+        // Actualizar la dirección si se proporciona
+        if (direccion) {
+            pedido.direccion = direccion;
+        }
+
+        if (estado) {
+            pedido.estado = estado;
+        }
+
+        const pedidoActualizado = await pedido.save();
+        res.status(200).json({ mensaje: 'Pedido actualizado con éxito', pedidoActualizado });
+    } catch (error) {
+        console.error('Error al modificar el pedido:', error);
+        res.status(500).json({ mensaje: 'Error al modificar el pedido', error: error.message });
     }
 };
 
@@ -74,28 +144,13 @@ const asignarRepartidor = async (req, res) => {
     }
 };
 
-const cambiarEstadoPedido = async (req, res) => {
-    try {
-        const { pedidoId, estado } = req.body;
-        const pedido = await Pedido.findByIdAndUpdate(pedidoId, { estado, fechaEnvio: estado === 'enviado' ? new Date() : null }, { new: true });
-        
-        if (!pedido) {
-            return res.status(404).json({ mensaje: 'Pedido no encontrado' });
-        }
-
-        res.json(pedido);
-    } catch (error) {
-        console.error('Error al cambiar estado del pedido:', error);
-        res.status(500).json({ mensaje: 'Error al cambiar estado del pedido', error: error.message });
-    }
-};
-
 module.exports = {
     crearPedido,
+    eliminarPedido,
+    modificarPedido,
     obtenerPedidos,
     obtenerPedidosCliente,
-    asignarRepartidor,
-    cambiarEstadoPedido
+    asignarRepartidor
 };
 
 /*
