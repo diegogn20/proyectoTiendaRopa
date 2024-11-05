@@ -11,11 +11,6 @@ const crearPago = async (req, res) => {
             return res.status(404).json({ mensaje: 'Pedido no encontrado' });
         }
 
-        // Verificar que el cliente del pedido coincida con el cliente autenticado
-        if (pedido.cliente.toString() !== clienteId) {
-            return res.status(403).json({ mensaje: 'No tienes permisos para realizar el pago de este pedido' });
-        }
-
         const nuevoPago = new Pago({
             pedido: pedidoId,
             cliente: clienteId,
@@ -49,7 +44,7 @@ const modificarPago = async (req, res) => {
             actualizaciones.estado = estado;
         }
         if (monto !== undefined) {
-            if (typeof monto !== 'number' || monto <= 0) {
+            if (monto <= 0) {
                 return res.status(400).json({ mensaje: 'Monto no válido' });
             }
             actualizaciones.monto = monto;
