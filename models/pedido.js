@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const pedidoSchema = new mongoose.Schema({
-    producto: { type: mongoose.Schema.Types.ObjectId, ref: 'Ropa', required: true },
+    productos: { type: [mongoose.Schema.Types.ObjectId], ref: 'Ropa', required: true },
     cliente: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario', required: true },
     repartidor: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
     fechaCompra: { type: Date, default: Date.now },

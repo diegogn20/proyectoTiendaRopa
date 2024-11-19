@@ -5,25 +5,27 @@ const mongoose = require('mongoose');
  
 const crearPedido = async (req, res) => {
     try {
-        const { productoId, direccion } = req.body;
+        const { productosIds, direccion } = req.body;
         const clienteId = req.usuario.id;
-
+        console.log(productosIds);
         // Verificar que el producto exista y esté en stock
-        const producto = await Ropa.findById(productoId);
-        if (!producto || producto.stock <= 0) {
-            return res.status(404).json({ mensaje: 'Producto no disponible o fuera de stock' });
+        const productos = await Promise.all(productosIds.map((prodID) => Ropa.findById(prodID)));
+        if (!productos || productos.some((a) => a.stock <= 0)) {
+            return res.status(404).json({ mensaje: 'Productos no disponibles o fuera de stock' });
         }
 
         const nuevoPedido = new Pedido({
-            producto: productoId,
+            productos: productosIds,
             cliente: clienteId,
             direccion,
             estado: 'en proceso',
         });
 
         await nuevoPedido.save();
-        producto.stock -= 1;
-        await producto.save();
+        await Promise.all(productos.map(async (a) => {a.stock -= 1;
+            return a.save();})
+        );
+        
 
         res.status(201).json(nuevoPedido);
     } catch (error) {
@@ -70,19 +72,22 @@ const modificarPedido = async (req, res) => {
 
         // Si se proporciona un nuevo producto, actualizar el stock
         if (productoId && productoId !== pedido.producto.toString()) {
-            const productoAntiguo = await Ropa.findById(pedido.producto);
-            if (productoAntiguo) {
-                productoAntiguo.stock += 1; 
-                await productoAntiguo.save();
+            const productosAntiguos = await Promise.all(pedido.producto.map((prodID) => Ropa.findById(prodID)));
+            if (productosAntiguos) {
+                for(const producto of productosAntiguos) {
+                    producto.stocks += 1;   
+                    await producto.save();                 
+                };
             }
 
-            const nuevoProducto = await Ropa.findById(productoId);
-            if (!nuevoProducto || nuevoProducto.stock <= 0) {
+            const nuevosProductos = await Promise.all(productoId.map((prodID) => Ropa.findById(prodID)));
+            if (!nuevosProductos || nuevosProductos.some((producto) => producto.stock <= 0)) {
                 return res.status(404).json({ mensaje: 'Nuevo producto no disponible o fuera de stock' });
             }
-            nuevoProducto.stock -= 1;
-            await nuevoProducto.save();
-            pedido.producto = productoId;
+            for(const producto of nuevosProductos) {
+                producto.stocks -= 1;   
+                await producto.save();  
+            }
         }
 
         // Actualizar la dirección si se proporciona
@@ -115,7 +120,7 @@ const obtenerPedidos = async (req, res) => {
 const obtenerPedidosCliente = async (req, res) => {
     try {
         const clienteId = req.usuario.id;
-        const pedidos = await Pedido.find({ cliente: clienteId }).populate('producto repartidor');
+        const pedidos = await Pedido.find({$and: [{cliente: clienteId},{producto: {$ne: null}}] }).populate('producto repartidor');
         res.json(pedidos);
     } catch (error) {
         console.error('Error al obtener los pedidos del cliente:', error);
